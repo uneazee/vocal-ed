@@ -1,7 +1,7 @@
 Flask
 flask-cors
 pyaudio
-SpeechRecognition 
+SpeechRecognition
 datasets
 transformers
 scikit-learn

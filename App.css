@@ -1,38 +1,96 @@
+@import 'normalize.css';
+
+:root {
+    --primary-color: #3498db; /* Example primary color */
+    --light-gray: #f4f4f4;
+    --dark-gray: #333;
+    --text-color: #2c3e50;
+    --border-radius: 8px; /* Consistent border radius */
+    --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+body {
+    font-family: 'Arial', sans-serif; /* Clean, readable font */
+    background-color: var(--light-gray);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Ensure full viewport height */
+    margin: 0; /* Remove default body margins */
+}
+
 .App {
-  text-align: center;
+    background-color: white;
+    padding: 3rem; /* Increased padding */
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    text-align: center;
+    width: 400px; /* Set a max-width for responsiveness */
+    max-width: 90%; /* Ensures it doesn't overflow on smaller screens */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+h1 {
+    color: var(--primary-color);
+    font-size: 2.2rem;
+    margin-bottom: 1.5rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+button {
+    padding: 0.8rem 1.8rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease; /* Smooth transition */
+    box-shadow: var(--box-shadow);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+button:hover {
+    background-color: darken(var(--primary-color), 10%); /* Darken on hover */
 }
 
-.App-link {
-  color: #61dafb;
+button:disabled {
+    opacity: 0.6;
+    cursor: default;
+    background-color: gray; /* or a lighter shade of primary */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+p {
+    margin: 1rem 0;
+    font-size: 1rem;
+}
+
+/* Style for the error message */
+.error-message {
+    color: #e74c3c; /* Red for error */
+    margin-top: 0.5rem;
+}
+
+/* Style for the text areas (if needed) */
+textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    resize: none; /* Prevent resizing */
+    box-sizing: border-box; /* Include padding in width */
+}
+
+/* Optional: Add some subtle animations */
+.App {
+    animation: fadeIn 0.5s ease-in-out; /* Fade in on load */
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
