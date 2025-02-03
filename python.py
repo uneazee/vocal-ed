@@ -1,47 +1,14 @@
-import shutil
-import tkinter as tk
-from tkinter import filedialog
+import pyaudio
 import speech_recognition as sr
 from datasets import load_dataset
 from transformers import pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import pyttsx3
-import os
-
-# Open a file dialog for the user to select a file
-root = tk.Tk()
-root.withdraw()  # Hide the root window
-
-file_path = filedialog.askopenfilename(initialdir="C:/Users/justx/Downloads", title="Select an Audio File")
-
-# Check if a file was selected
-if file_path:
-    print(f"File selected: {file_path}")
-    try:
-        with open(file_path, "rb") as f:
-            file_content = f.read()
-        print("File uploaded successfully!")
-    except Exception as e:
-        print(f"Error reading the file: {e}")
-        exit()  # Stop execution if file reading fails
-else:
-    print("No file selected.")
-    exit()  # Stop execution if no file is selected
+import threading
 
 # Initialize speech recognizer
 recognizer = sr.Recognizer()
-
-# Try to process audio file
-file = file_path  # Use the selected file
-try:
-    with sr.AudioFile(file) as source:
-        audio_data = recognizer.record(source)
-        text = recognizer.recognize_google(audio_data)
-    print(f"Recognized Text: {text}")
-except Exception as e:
-    print(f"Error processing audio: {e}")
-    exit()  # Stop execution if audio processing fails
 
 # Load the Microsoft WikiQA dataset
 try:
@@ -83,43 +50,61 @@ def find_best_context(question, dataset):
     # Return the text of the most similar document
     return all_documents[most_similar_index]
 
-# Find the most relevant context
-context = find_best_context(text, ds['train'])
-
-# Get the answer from the QA model
-try:
-    # Using the correct 'question' and 'context' as inputs to the QA pipeline
-    result = qa_pipeline(question=text, context=context)
-    print(f"Question: {text}")
-    print(f"Answer: {result['answer']}")
-except Exception as e:
-    print(f"Error in QA pipeline: {e}")
-    exit()  # Stop execution if QA model fails
-
 # Initialize TTS engine
 engine = pyttsx3.init()
-
-# Set properties (optional)
 engine.setProperty('rate', 150)  # Speed of speech
 engine.setProperty('volume', 1)  # Volume level (0.0 to 1.0)
 
-# Define the output audio file path
-output_audio_path = os.path.join("C:/Users/justx/Downloads", "response.mp3")
+# Function to convert text to speech
+def speak_text(text):
+    try:
+        engine.say(text)
+        engine.runAndWait()  # Ensure speech is processed immediately
+    except Exception as e:
+        print(f"Error in TTS: {e}")
 
-# Convert the generated text to speech (TTS)
+# Function to listen and process speech
+def listen_and_process():
+    with sr.Microphone() as source:
+        print("Please ask a question...")
+        while True:
+            try:
+                # Adjust for ambient noise and listen for speech
+                recognizer.adjust_for_ambient_noise(source)
+                audio = recognizer.listen(source)
+
+                # Recognize speech using Google Speech Recognition API
+                text = recognizer.recognize_google(audio)
+                print(f"Recognized Text: {text}")
+
+                # Find the most relevant context from the dataset
+                context = find_best_context(text, ds['train'])
+
+                # Get the answer from the QA pipeline
+                try:
+                    result = qa_pipeline(question=text, context=context)
+                    print(f"Question: {text}")
+                    print(f"Answer: {result['answer']}")
+
+                    # Speak the answer back to the user
+                    speak_text(result['answer'])
+
+                except Exception as e:
+                    print(f"Error in QA pipeline: {e}")
+
+            except sr.UnknownValueError:
+                print("Sorry, I didn't catch that. Please repeat.")
+            except sr.RequestError:
+                print("Could not request results from Google Speech Recognition service; check your network connection.")
+
+# Run the listen and process function in a separate thread for continuous listening
+listener_thread = threading.Thread(target=listen_and_process)
+listener_thread.daemon = True  # Daemonize thread to exit when main program exits
+listener_thread.start()
+
+# Keep the main program running while the listener thread is working
 try:
-    engine.save_to_file(result['answer'], output_audio_path)
-    engine.runAndWait()  # Ensure the speech is processed and saved
-    print(f"Audio file saved successfully at: {output_audio_path}")
-except Exception as e:
-    print(f"Error saving audio file: {e}")
-
-# File to simulate download by copying to another location (optional)
-destination_path = "C:/Users/justx/Downloads/response.mp3"  # Or another folder
-
-# Simulate file download by copying the saved audio file
-try:
-    shutil.copy(output_audio_path, destination_path)
-    print(f"File downloaded to: {destination_path}")
-except Exception as e:
-    print(f"Error downloading file: {e}")
+    while True:
+        pass
+except KeyboardInterrupt:
+    print("Program terminated.")
