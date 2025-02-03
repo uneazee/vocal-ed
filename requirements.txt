@@ -1,0 +1,9 @@
+Flask
+flask-cors
+pyaudio
+SpeechRecognition 
+datasets
+transformers
+scikit-learn
+pyttsx3
+numpy
